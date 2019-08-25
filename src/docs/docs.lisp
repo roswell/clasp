@@ -33,9 +33,24 @@
                  :document (make-pathname :name "documentation" :type "md"
                                           :defaults *here*)))
 
+(defclass package-page (staple:definitions-index-page)
+  ())
+
+(defmethod definition-wanted-p ((definition definitions:definition) (page package-page))
+  (eql :external (definitions:visibility definition)))
+
+(defmethod definition-wanted-p ((definition definitions:method) (page package-page))
+  NIL)
+
+(defmethod definition-wanted-p ((definition definitions:package) (page package-page))
+  NIL)
+
+(defmethod definition-wanted-p ((definition definitions:compiler-macro) (page package-page))
+  NIL)
+
 (defun make-package-page (package project)
   (let ((package (staple:ensure-package package)))
-    (make-instance 'staple:definitions-index-page
+    (make-instance 'package-page
                    :project project
                    :title (package-name package)
                    :language :en
