@@ -14,6 +14,8 @@
 
 (cleavir-io:define-save-info setf-fdefinition-ast)
 
+(defmethod cleavir-ast:map-children (function (ast setf-fdefinition-ast))
+  (funcall function (cleavir-ast:name-ast ast)))
 (defmethod cleavir-ast:children ((ast setf-fdefinition-ast))
   (list (cleavir-ast:name-ast ast)))
 
@@ -37,6 +39,9 @@
   (:tag-ast tag-ast)
   (:result-ast result-ast))
 
+(defmethod cleavir-ast:map-children (function (ast throw-ast))
+  (funcall function (tag-ast ast))
+  (funcall function (result-ast ast)))
 (defmethod cleavir-ast:children ((ast throw-ast))
   (list (tag-ast ast) (result-ast ast)))
 
@@ -56,6 +61,8 @@
   (with-output-to-string (s)
     (format s "debug-message (~a)" (debug-message ast))))
 
+(defmethod cleavir-ast:map-children (function (ast debug-message-ast))
+  (declare (ignore function)))
 (defmethod cleavir-ast:children ((ast debug-message-ast)) nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -74,6 +81,8 @@
   (with-output-to-string (s)
     (format s "debug-break")))
 
+(defmethod cleavir-ast:map-children (function (ast debug-break-ast))
+  (declare (ignore function)))
 (defmethod cleavir-ast:children ((ast debug-break-ast)) nil)
 
 
@@ -95,6 +104,8 @@
   (with-output-to-string (s)
     (format s "base-foreign-call ~a" (foreign-types ast))))
 
+(defmethod cleavir-ast:map-children (function (ast base-foreign-call-ast))
+  (mapc function (argument-asts ast)))
 (defmethod cleavir-ast:children ((ast base-foreign-call-ast))
   (argument-asts ast))
 
@@ -114,9 +125,6 @@
   (with-output-to-string (s)
     (format s "multiple-value-foreign-call (~a)" (function-name ast))))
 
-(defmethod cleavir-ast:children ((ast multiple-value-foreign-call-ast))
-  (call-next-method))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Class FOREIGN-call-AST
@@ -134,9 +142,6 @@
   (with-output-to-string (s)
     (format s "foreign-call (~a)" (function-name ast))))
 
-(defmethod cleavir-ast:children ((ast foreign-call-ast))
-  (argument-asts ast))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Class foreign-call-pointer-AST
@@ -150,9 +155,6 @@
   (with-output-to-string (s)
     (format s "foreign-call-pointer")))
 
-(defmethod cleavir-ast:children ((ast foreign-call-pointer-ast))
-  (argument-asts ast))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Class DEFCALLBACK-AST
@@ -165,6 +167,8 @@
    (%args :initarg :args :reader defcallback-args)
    (%callee :initarg :callee :reader cleavir-ast:callee-ast)))
 
+(defmethod cleavir-ast:map-children (function (ast defcallback-ast))
+  (funcall function (cleavir-ast:callee-ast ast)))
 (defmethod cleavir-ast:children ((ast defcallback-ast))
   (list (cleavir-ast:callee-ast ast)))
 
@@ -180,6 +184,12 @@
    (%wrapped-ast :initarg :wrapped-ast :reader wrapped-ast)
    (%header-ast :initarg :header-ast :reader header-ast)))
 
+(defmethod cleavir-ast:map-children (function (ast header-stamp-case-ast))
+  (funcall function (stamp-ast ast))
+  (funcall function (derivable-ast ast))
+  (funcall function (rack-ast ast))
+  (funcall function (wrapped-ast ast))
+  (funcall function (header-ast ast)))
 (defmethod cleavir-ast:children ((ast header-stamp-case-ast))
   (list (stamp-ast ast) (derivable-ast ast) (rack-ast ast)
         (wrapped-ast ast) (header-ast ast)))
@@ -207,6 +217,8 @@
 (defmethod cleavir-ast-graphviz::label ((ast vector-length-ast))
   "vlength")
 
+(defmethod cleavir-ast:map-children (function (ast vector-length-ast))
+  (funcall function (cleavir-ast:arg-ast ast)))
 (defmethod cleavir-ast:children ((ast vector-length-ast))
   (list (cleavir-ast:arg-ast ast)))
 
@@ -225,6 +237,8 @@
 (defmethod cleavir-ast-graphviz::label ((ast displacement-ast))
   "displacement")
 
+(defmethod cleavir-ast:map-children (function (ast displacement-ast))
+  (funcall function (cleavir-ast:arg-ast ast)))
 (defmethod cleavir-ast:children ((ast displacement-ast))
   (list (cleavir-ast:arg-ast ast)))
 
@@ -243,6 +257,8 @@
 (defmethod cleavir-ast-graphviz::label ((ast displaced-index-offset-ast))
   "d-offset")
 
+(defmethod cleavir-ast:map-children (function (ast displaced-index-offset-ast))
+  (funcall function (cleavir-ast:arg-ast ast)))
 (defmethod cleavir-ast:children ((ast displaced-index-offset-ast))
   (list (cleavir-ast:arg-ast ast)))
 
@@ -261,6 +277,8 @@
 (defmethod cleavir-ast-graphviz::label ((ast array-total-size-ast))
   "ATS")
 
+(defmethod cleavir-ast:map-children (function (ast array-total-size-ast))
+  (funcall function (cleavir-ast:arg-ast ast)))
 (defmethod cleavir-ast:children ((ast array-total-size-ast))
   (list (cleavir-ast:arg-ast ast)))
 
@@ -279,6 +297,8 @@
 (defmethod cleavir-ast-graphviz::label ((ast array-rank-ast))
   "rank")
 
+(defmethod cleavir-ast:map-children (function (ast array-rank-ast))
+  (funcall function (cleavir-ast:arg-ast ast)))
 (defmethod cleavir-ast:children ((ast array-rank-ast))
   (list (cleavir-ast:arg-ast ast)))
 
@@ -299,6 +319,9 @@
 (defmethod cleavir-ast-graphviz::label ((ast array-dimension-ast))
   "AD")
 
+(defmethod cleavir-ast:map-children (function (ast array-dimension-ast))
+  (funcall function (cleavir-ast:arg1-ast ast))
+  (funcall function (cleavir-ast:arg2-ast ast)))
 (defmethod cleavir-ast:children ((ast array-dimension-ast))
   (list (cleavir-ast:arg1-ast ast)
         (cleavir-ast:arg2-ast ast)))
@@ -311,6 +334,8 @@
   ((%arg :initarg :arg :accessor cleavir-ast:arg-ast)))
 (cleavir-io:define-save-info header-stamp-ast (:arg cleavir-ast:arg-ast))
 (defmethod cleavir-ast-graphviz::label ((ast header-stamp-ast)) "header-stamp")
+(defmethod cleavir-ast:map-children (function (ast header-stamp-ast))
+  (funcall function (cleavir-ast:arg-ast ast)))
 (defmethod cleavir-ast:children ((ast header-stamp-ast))
   (list (cleavir-ast:arg-ast ast)))
 
@@ -322,6 +347,8 @@
   ((%arg :initarg :arg :accessor cleavir-ast:arg-ast)))
 (cleavir-io:define-save-info rack-stamp-ast (:arg cleavir-ast:arg-ast))
 (defmethod cleavir-ast-graphviz::label ((ast rack-stamp-ast)) "rack-stamp")
+(defmethod cleavir-ast:map-children (function (ast rack-stamp-ast))
+  (funcall function (cleavir-ast:arg-ast ast)))
 (defmethod cleavir-ast:children ((ast rack-stamp-ast))
   (list (cleavir-ast:arg-ast ast)))
 
@@ -333,6 +360,8 @@
   ((%arg :initarg :arg :accessor cleavir-ast:arg-ast)))
 (cleavir-io:define-save-info wrapped-stamp-ast (:arg cleavir-ast:arg-ast))
 (defmethod cleavir-ast-graphviz::label ((ast wrapped-stamp-ast)) "wrapped-stamp")
+(defmethod cleavir-ast:map-children (function (ast wrapped-stamp-ast))
+  (funcall function (cleavir-ast:arg-ast ast)))
 (defmethod cleavir-ast:children ((ast wrapped-stamp-ast))
   (list (cleavir-ast:arg-ast ast)))
 
@@ -344,6 +373,8 @@
   ((%arg :initarg :arg :accessor cleavir-ast:arg-ast)))
 (cleavir-io:define-save-info derivable-stamp-ast (:arg cleavir-ast:arg-ast))
 (defmethod cleavir-ast-graphviz::label ((ast derivable-stamp-ast)) "derivable-stamp")
+(defmethod cleavir-ast:map-children (function (ast derivable-stamp-ast))
+  (funcall function (cleavir-ast:arg-ast ast)))
 (defmethod cleavir-ast:children ((ast derivable-stamp-ast))
   (list (cleavir-ast:arg-ast ast)))
 
@@ -361,6 +392,8 @@
 (defmethod cleavir-ast-graphviz::label ((ast instance-rack-ast))
   "instance-rack")
 
+(defmethod cleavir-ast:map-children (function (ast instance-rack-ast))
+  (funcall function (cleavir-ast:object-ast ast)))
 (defmethod cleavir-ast:children ((ast instance-rack-ast))
   (list (cleavir-ast:object-ast ast)))
 
@@ -380,6 +413,9 @@
 (defmethod cleavir-ast-graphviz::label ((ast instance-rack-set-ast))
   "instance-rack-set")
 
+(defmethod cleavir-ast:map-children (function (ast instance-rack-set-ast))
+  (funcall function (cleavir-ast:object-ast ast))
+  (funcall function (cleavir-ast:value-ast ast)))
 (defmethod cleavir-ast:children ((ast instance-rack-set-ast))
   (list (cleavir-ast:object-ast ast) (cleavir-ast:value-ast ast)))
 
@@ -400,6 +436,9 @@
 (defmethod cleavir-ast-graphviz::label ((ast rack-read-ast))
   "rack-read")
 
+(defmethod cleavir-ast:map-children (function (ast rack-read-ast))
+  (funcall function (cleavir-ast:object-ast ast))
+  (funcall function (cleavir-ast:slot-number-ast ast)))
 (defmethod cleavir-ast:children ((ast rack-read-ast))
   (list (cleavir-ast:object-ast ast) (cleavir-ast:slot-number-ast ast)))
 
@@ -422,6 +461,10 @@
 (defmethod cleavir-ast-graphviz::label ((ast rack-write-ast))
   "rack-write")
 
+(defmethod cleavir-ast:map-children (function (ast rack-write-ast))
+  (funcall function (cleavir-ast:object-ast ast))
+  (funcall function (cleavir-ast:slot-number-ast ast))
+  (funcall function (cleavir-ast:value-ast ast)))
 (defmethod cleavir-ast:children ((ast rack-write-ast))
   (list (cleavir-ast:object-ast ast) (cleavir-ast:slot-number-ast ast)
         (cleavir-ast:value-ast ast)))
@@ -442,6 +485,8 @@
 (defmethod cleavir-ast-graphviz::label ((ast vaslist-pop-ast))
   "vaslist-pop")
 
+(defmethod cleavir-ast:map-children (function (ast vaslist-pop-ast))
+  (funcall function (cleavir-ast:arg-ast ast)))
 (defmethod cleavir-ast:children ((ast vaslist-pop-ast))
   (list (cleavir-ast:arg-ast ast)))
 
@@ -460,6 +505,8 @@
 (defmethod cleavir-ast-graphviz::label ((ast vaslist-length-ast))
   "vaslist-length")
 
+(defmethod cleavir-ast:map-children (function (ast vaslist-length-ast))
+  (funcall function (cleavir-ast:arg-ast ast)))
 (defmethod cleavir-ast:children ((ast vaslist-length-ast))
   (list (cleavir-ast:arg-ast ast)))
 
@@ -478,6 +525,9 @@
 (cleavir-io:define-save-info cas-ast
     (:cmp-ast cmp-ast) (:value-ast cleavir-ast:value-ast))
 
+(defmethod cleavir-ast:map-children (function (ast cas-ast))
+  (funcall function (cmp-ast ast))
+  (funcall function (cleavir-ast:value-ast ast)))
 (defmethod cleavir-ast:children ((ast cas-ast))
   (list (cmp-ast ast) (cleavir-ast:value-ast ast)))
 
@@ -497,6 +547,9 @@
 (defmethod cleavir-ast-graphviz::label ((ast cas-car-ast))
   "cas-car")
 
+(defmethod cleavir-ast:map-children (function (ast cas-car-ast))
+  (funcall function (cleavir-ast:cons-ast ast))
+  (call-next-method))
 (defmethod cleavir-ast:children ((ast cas-car-ast))
   (list* (cleavir-ast:cons-ast ast) (call-next-method)))
 
@@ -515,6 +568,9 @@
 (defmethod cleavir-ast-graphviz::label ((ast cas-cdr-ast))
   "cas-cdr")
 
+(defmethod cleavir-ast:map-children (function (ast cas-cdr-ast))
+  (funcall function (cleavir-ast:cons-ast ast))
+  (call-next-method))
 (defmethod cleavir-ast:children ((ast cas-cdr-ast))
   (list* (cleavir-ast:cons-ast ast) (call-next-method)))
 
@@ -535,6 +591,10 @@
 (defmethod cleavir-ast-graphviz::label ((ast slot-cas-ast))
   "slot-cas")
 
+(defmethod cleavir-ast:map-children (function (ast slot-cas-ast))
+  (funcall function (cleavir-ast:object-ast ast))
+  (funcall function (cleavir-ast:slot-number-ast ast))
+  (call-next-method))
 (defmethod cleavir-ast:children ((ast slot-cas-ast))
   (list* (cleavir-ast:object-ast ast)
          (cleavir-ast:slot-number-ast ast)
@@ -562,6 +622,10 @@
 
 (defmethod cleavir-ast-graphviz::label ((ast acas-ast)) "acas")
 
+(defmethod cleavir-ast:map-children (function (ast acas-ast))
+  (funcall function (cleavir-ast:array-ast ast))
+  (funcall function (cleavir-ast:index-ast ast))
+  (call-next-method))
 (defmethod cleavir-ast:children ((ast acas-ast))
   (list* (cleavir-ast:array-ast ast)
          (cleavir-ast:index-ast ast)
@@ -620,6 +684,10 @@
 
 (defmethod cleavir-ast-graphviz::label ((ast bind-ast)) "bind")
 
+(defmethod cleavir-ast:map-children (function (ast bind-ast))
+  (funcall function (cleavir-ast:name-ast ast))
+  (funcall function (cleavir-ast:value-ast ast))
+  (funcall function (cleavir-ast:body-ast ast)))
 (defmethod cleavir-ast:children ((ast bind-ast))
   (list (cleavir-ast:name-ast ast)
         (cleavir-ast:value-ast ast)
@@ -648,6 +716,9 @@
 (defmethod cleavir-ast-graphviz::label ((ast unwind-protect-ast))
   "unwind-protect")
 
+(defmethod cleavir-ast:map-children (function (ast unwind-protect-ast))
+  (funcall function (cleavir-ast:body-ast ast))
+  (funcall function (cleanup-ast ast)))
 (defmethod cleavir-ast:children ((ast unwind-protect-ast))
   (list (cleavir-ast:body-ast ast)
         (cleanup-ast ast)))
@@ -670,6 +741,8 @@
   (:index precalc-value-reference-ast-index)
   (:original-object precalc-value-reference-ast-original-object))
 
+(defmethod cleavir-ast:map-children (function (ast precalc-value-reference-ast))
+  (declare (ignore function)))
 (defmethod cleavir-ast:children ((ast precalc-value-reference-ast))
   nil)
 
@@ -713,6 +786,9 @@
   (:body-ast cleavir-ast:body-ast)
   (:rest-alloc rest-alloc))
 
+(defmethod cleavir-ast:map-children (function (ast bind-va-list-ast))
+  (funcall function (va-list-ast ast))
+  (funcall function (cleavir-ast:body-ast ast)))
 (defmethod cleavir-ast:children ((ast bind-va-list-ast))
   (list* (va-list-ast ast)
          (cleavir-ast:body-ast ast)
