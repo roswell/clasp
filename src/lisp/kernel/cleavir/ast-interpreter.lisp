@@ -84,14 +84,6 @@
 (defmacro defcan (name)
   `(defmethod can-interpret-p ((ast ,name)) t))
 
-(defun can-interpret-ast-p (ast)
-  (cleavir-ast:map-ast-depth-first-preorder
-   (lambda (ast)
-     (unless (can-interpret-p ast)
-       (return-from can-interpret-ast-p nil)))
-   ast)
-  t)
-
 (defcan cleavir-ast:immediate-ast)
 (defmethod interpret-ast ((ast cleavir-ast:immediate-ast) env)
   (declare (ignore env))
@@ -342,7 +334,7 @@
 (defmethod interpret-ast ((ast cleavir-ast:aset-ast) env)
   (setf (aref (interpret-ast (cleavir-ast:array-ast ast) env)
               (interpret-ast (cleavir-ast:index-ast ast) env))
-        (interpret-ast (cleavir-ast:element-ast ast) env)))
+        (interpret-ast (cleavir-ast:value-ast ast) env)))
 
 ;;; cons-related-asts.lisp
 
@@ -357,12 +349,12 @@
 (defcan cleavir-ast:rplaca-ast)
 (defmethod interpret-ast ((ast cleavir-ast:rplaca-ast) env)
   (setf (car (the cons (interpret-ast (cleavir-ast:cons-ast ast) env)))
-        (interpret-ast (cleavir-ast:object-ast ast) env)))
+        (interpret-ast (cleavir-ast:value-ast ast) env)))
 
 (defcan cleavir-ast:rplacd-ast)
 (defmethod interpret-ast ((ast cleavir-ast:rplacd-ast) env)
   (setf (cdr (the cons (interpret-ast (cleavir-ast:cons-ast ast) env)))
-        (interpret-ast (cleavir-ast:object-ast ast) env)))
+        (interpret-ast (cleavir-ast:value-ast ast) env)))
 
 ;;; fixnum-related-asts.lisp
 
