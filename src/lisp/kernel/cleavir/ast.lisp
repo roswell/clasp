@@ -512,23 +512,24 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Class CAS-AST
+;;; Class CAS-AST-MIXIN
 ;;;
 ;;; Abstract. Class for compare-and-swap ASTs.
 
-(defclass cas-ast (cleavir-ast:one-value-ast-mixin cleavir-ast:ast)
+(defclass cas-ast-mixin (cleavir-ast:one-value-ast-mixin)
   (;; The "old" value being compared to the loaded one.
    (%cmp-ast :initarg :cmp-ast :reader cmp-ast)
    ;; The "new" value that's maybe being stored.
    (%value-ast :initarg :value-ast :reader cleavir-ast:value-ast)))
 
-(cleavir-io:define-save-info cas-ast
+(cleavir-io:define-save-info cas-ast-mixin
     (:cmp-ast cmp-ast) (:value-ast cleavir-ast:value-ast))
 
-(defmethod cleavir-ast:map-children progn (function (ast cas-ast))
+(defmethod cleavir-ast:map-children progn
+    (function (ast cas-ast-mixin))
   (funcall function (cmp-ast ast))
   (funcall function (cleavir-ast:value-ast ast)))
-(defmethod cleavir-ast:children append ((ast cas-ast))
+(defmethod cleavir-ast:children append ((ast cas-ast-mixin))
   (list (cmp-ast ast) (cleavir-ast:value-ast ast)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -536,21 +537,12 @@
 ;;; Class CAS-CAR-AST
 ;;;
 ;;; Compare-and-swap a cons's car.
-;;; NOTE: Could be a child of CAR-AST? Except for CHILDREN methods.
 
-(defclass cas-car-ast (cas-ast)
-  ((%cons-ast :initarg :cons-ast :reader cleavir-ast:cons-ast)))
-
-(cleavir-io:define-save-info cas-car-ast
-    (:cons-ast cleavir-ast:cons-ast))
+(defclass cas-car-ast (cas-ast-mixin cleavir-ast:cons-access-ast)
+  ())
 
 (defmethod cleavir-ast-graphviz::label ((ast cas-car-ast))
   "cas-car")
-
-(defmethod cleavir-ast:map-children progn (function (ast cas-car-ast))
-  (funcall function (cleavir-ast:cons-ast ast)))
-(defmethod cleavir-ast:children append ((ast cas-car-ast))
-  (list (cleavir-ast:cons-ast ast)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -558,19 +550,11 @@
 ;;;
 ;;; Compare-and-swap a cons's cdr.
 
-(defclass cas-cdr-ast (cas-ast)
-  ((%cons-ast :initarg :cons-ast :reader cleavir-ast:cons-ast)))
-
-(cleavir-io:define-save-info cas-cdr-ast
-    (:cons-ast cleavir-ast:cons-ast))
+(defclass cas-cdr-ast (cas-ast-mixin cleavir-ast:cons-access-ast)
+  ())
 
 (defmethod cleavir-ast-graphviz::label ((ast cas-cdr-ast))
   "cas-cdr")
-
-(defmethod cleavir-ast:map-children progn (function (ast cas-cdr-ast))
-  (funcall function (cleavir-ast:cons-ast ast)))
-(defmethod cleavir-ast:children append ((ast cas-cdr-ast))
-  (list (cleavir-ast:cons-ast ast)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -578,23 +562,11 @@
 ;;;
 ;;; Compare-and-swap an instance slot.
 
-(defclass slot-cas-ast (cas-ast)
-  ((%object-ast :initarg :object-ast :reader cleavir-ast:object-ast)
-   (%slot-number-ast :initarg :slot-number-ast :reader cleavir-ast:slot-number-ast)))
-
-(cleavir-io:define-save-info slot-cas-ast
-    (:object-ast cleavir-ast:object-ast)
-  (:slot-number-ast cleavir-ast:slot-number-ast))
+(defclass slot-cas-ast (cas-ast-mixin cleavir-ast:slot-access-ast)
+  ())
 
 (defmethod cleavir-ast-graphviz::label ((ast slot-cas-ast))
   "slot-cas")
-
-(defmethod cleavir-ast:map-children progn (function (ast slot-cas-ast))
-  (funcall function (cleavir-ast:object-ast ast))
-  (funcall function (cleavir-ast:slot-number-ast ast)))
-(defmethod cleavir-ast:children append ((ast slot-cas-ast))
-  (list (cleavir-ast:object-ast ast)
-        (cleavir-ast:slot-number-ast ast)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -602,28 +574,9 @@
 ;;;
 ;;; Compare-and-swap an array element.
 
-(defclass acas-ast (cas-ast)
-  ((%array-ast :initarg :array-ast :reader cleavir-ast:array-ast)
-   (%index-ast :initarg :index-ast :reader cleavir-ast:index-ast)
-   (%element-type :initarg :element-type :reader cleavir-ast:element-type)
-   (%simple-p :initarg :simple-p :reader cleavir-ast:simple-p)
-   (%boxed-p :initarg :boxed-p :reader cleavir-ast:boxed-p)))
-
-(cleavir-io:define-save-info acas-ast
-    (:array-ast cleavir-ast:array-ast)
-  (:index-ast cleavir-ast:index-ast)
-  (:element-type cleavir-ast:element-type)
-  (:simple-p cleavir-ast:simple-p)
-  (:boxed-p cleavir-ast:boxed-p))
+(defclass acas-ast (cas-ast-mixin cleavir-ast:array-access-ast) ())
 
 (defmethod cleavir-ast-graphviz::label ((ast acas-ast)) "acas")
-
-(defmethod cleavir-ast:map-children progn (function (ast acas-ast))
-  (funcall function (cleavir-ast:array-ast ast))
-  (funcall function (cleavir-ast:index-ast ast)))
-(defmethod cleavir-ast:children append ((ast acas-ast))
-  (list (cleavir-ast:array-ast ast)
-        (cleavir-ast:index-ast ast)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
