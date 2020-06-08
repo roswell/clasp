@@ -737,15 +737,20 @@
   (funcall function (va-list-ast ast))
   (funcall function (cleavir-ast:body-ast ast)))
 (defmethod cleavir-ast:children append ((ast bind-va-list-ast))
-  (list* (va-list-ast ast)
-         (cleavir-ast:body-ast ast)
-         (loop for entry in (cleavir-ast:lambda-list ast)
-               append (cond ((symbolp entry) '())
-                            ((consp entry)
-                             (if (= (length entry) 2)
-                                 entry
-                                 (cdr entry)))
-                            (t (list entry))))))
+  (list (cleavir-ast:body-ast ast)))
+
+(defmethod cleavir-ast:map-variables progn (function (ast bind-va-list-ast))
+  (loop for item in (cleavir-ast:lambda-list ast)
+        if (typep item 'cleavir-ast:lexical-variable)
+          do (funcall function item)
+        else if (listp item)
+               do (ecase (length item)
+                    ((2) ; optional: (var var-p)
+                     (funcall function (first item))
+                     (funcall function (second item)))
+                    ((3) ; key: (key var var-p)
+                     (funcall function (second item))
+                     (funcall function (third item))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

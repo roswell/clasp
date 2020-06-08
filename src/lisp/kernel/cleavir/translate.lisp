@@ -423,7 +423,7 @@ when this is t a lot of graphs will be generated.")
 
 (defun translate (initial-instruction map-enter-to-function-info go-indices
                   &key (abi *abi-x86-64*) (linkage 'llvm-sys:internal-linkage))
-  #+(or)
+;;  #+(or)
   (let ((uninitialized (check-for-uninitialized-inputs-dumb initial-instruction)))
     (unless (null uninitialized)
       (error "Uninitialized inputs: ~a" uninitialized)))

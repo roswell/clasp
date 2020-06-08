@@ -114,6 +114,7 @@ when this is t a lot of graphs will be generated.")
 
 ;;; So that we can dump ASTs (for DEFUNs with an inline expansion)
 (defmethod make-load-form ((ast cleavir-ast:ast) &optional environment)
+  (declare (ignore environment))
   (values `(allocate-instance ,(class-of ast))
           `(initialize-instance
             ,ast
@@ -122,6 +123,10 @@ when this is t a lot of graphs will be generated.")
                     for value = (funcall reader ast)
                     collect `(quote ,keyword)
                     collect `(quote ,value)))))
+
+(defmethod make-load-form ((var cleavir-ast:lexical-variable) &optional env)
+  (declare (ignore env))
+  `(cleavir-ast:make-lexical-variable ',(cleavir-ast:name var)))
 
 (defmethod cleavir-env:function-info ((environment clasp-global-environment) function-name)
   (cond
