@@ -15,9 +15,8 @@
 (cleavir-io:define-save-info setf-fdefinition-ast)
 
 (defmethod cleavir-ast:map-children progn (function (ast setf-fdefinition-ast))
-  (funcall function (cleavir-ast:name-ast ast)))
-(defmethod cleavir-ast:children append ((ast setf-fdefinition-ast))
-  (list (cleavir-ast:name-ast ast)))
+  (declare (ignore function)))
+(defmethod cleavir-ast:children append ((ast setf-fdefinition-ast)) nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
